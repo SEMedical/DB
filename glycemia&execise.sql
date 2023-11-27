@@ -213,11 +213,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `composition`
+-- Table `comlication`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `composition` ;
+DROP TABLE IF EXISTS `complication` ;
 
-CREATE TABLE IF NOT EXISTS `composition` (
+CREATE TABLE IF NOT EXISTS `complication` (
   `patient_id` INT NOT NULL,
   `symptom` ENUM('diabetic foot', 'diabetic eye', 'diabetic kidney', 'diabetic cardiovascular disease', ' diabetic neuropathy', 'diabetic skin disease', 'hypertension', 'hyperlipidemia', 'others') NOT NULL,
   PRIMARY KEY (`patient_id`, `symptom`),
