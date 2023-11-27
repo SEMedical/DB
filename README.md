@@ -3,7 +3,7 @@
 
 ## ER图
 
-![ER](.\assets\ER.png)
+![ER](assets/ER.png)
 
 ## 数据库模式概述	
 
