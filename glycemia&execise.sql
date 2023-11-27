@@ -24,7 +24,7 @@ USE `glycemia` ;
 DROP TABLE IF EXISTS `user` ;
 
 CREATE TABLE IF NOT EXISTS `user` (
-  `user_id` INT NOT NULL,
+  `user_id` INT NOT NULL AUTO_INCREMENT,
   `age` INT NULL,
   `name` VARCHAR(45) NULL,
   `contact` VARCHAR(11) NULL,
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `exercise` (
   `start_time` DATETIME(6) NULL,
   `duration` INT NULL COMMENT 'unit:min',
   `category` VARCHAR(45) NULL COMMENT '\'jogging,yoga,swimming,running\'',
-  `exercise_id` INT NOT NULL,
+  `exercise_id` INT NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`exercise_id`),
   CONSTRAINT `patient_id1`
     FOREIGN KEY (`patient_id`)
@@ -191,7 +191,7 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `examine` ;
 
 CREATE TABLE IF NOT EXISTS `examine` (
-  `examination_id` INT NOT NULL,
+  `examination_id` INT NOT NULL AUTO_INCREMENT,
   `patient_id` INT NULL,
   `weight` DECIMAL NULL,
   `health_state` ENUM('severe', 'unhealthy', 'well', 'healthy') NULL,
