@@ -163,7 +163,25 @@ CREATE TABLE IF NOT EXISTS `treatment` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
-
+-- -----------------------------------------------------
+-- Table `subscription`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `subscription`;
+CREATE TABLE IF NOT EXISTS `subscription` (
+  `follower_id` INT NOT NULL,
+  `doctor_id` INT NOT NULL,
+  PRIMARY KEY (`follower_id`, `doctor_id`),
+  CONSTRAINT `fk_subscription_user`
+    FOREIGN KEY (`follower_id`)
+    REFERENCES `user` (`user_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_subscription_doctor`
+    FOREIGN KEY (`doctor_id`)
+    REFERENCES `user` (`user_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+) ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `working_hours`
