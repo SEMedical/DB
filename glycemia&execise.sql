@@ -25,7 +25,8 @@ DROP TABLE IF EXISTS `user` ;
 
 CREATE TABLE IF NOT EXISTS `user` (
   `user_id` INT NOT NULL AUTO_INCREMENT,
-  `age` INT NULL,
+  `height` INT NULL,
+  `address` VARCHAR(100) NULL,
   `name` VARCHAR(45) NULL,
   `contact` VARCHAR(11) NULL,
   `password` VARCHAR(64) NULL COMMENT '\'Encrypted by SHA256\'',
@@ -61,15 +62,14 @@ DROP TABLE IF EXISTS `profile` ;
 CREATE TABLE IF NOT EXISTS `profile` (
   `patient_id` INT NOT NULL,
   `gender` ENUM('Female', 'Male') NULL DEFAULT 'Male',
-  `address` GEOMETRY NULL,
   `type` ENUM('I', 'II', 'gestational') NULL,
+  `age` INT NULL,
   `family_history` TEXT(200) NULL,
   `diagnosed_year` YEAR(4) NULL,
   `anamnesis` TEXT(200) NULL,
   `medication_pattern` ENUM('oral', 'insulin', 'both') NULL,
   `allergy` TEXT(200) NULL,
   `medication_history` TEXT(200) NULL,
-  `height` INT NULL,
   `dietary_therapy` TINYINT NULL,
   `exercise_therapy` TINYINT NULL,
   `oral_therapy` TINYINT NULL,
@@ -231,11 +231,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `comlication`
+-- Table `composition`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `complication` ;
+DROP TABLE IF EXISTS `composition` ;
 
-CREATE TABLE IF NOT EXISTS `complication` (
+CREATE TABLE IF NOT EXISTS `composition` (
   `patient_id` INT NOT NULL,
   `symptom` ENUM('diabetic foot', 'diabetic eye', 'diabetic kidney', 'diabetic cardiovascular disease', ' diabetic neuropathy', 'diabetic skin disease', 'hypertension', 'hyperlipidemia', 'others') NOT NULL,
   PRIMARY KEY (`patient_id`, `symptom`),
