@@ -122,24 +122,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `insulin`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `insulin` ;
-
-CREATE TABLE IF NOT EXISTS `insulin` (
-  `patient_id` INT NOT NULL,
-  `dose` DECIMAL NULL,
-  `time` TIMESTAMP(6) NOT NULL,
-  PRIMARY KEY (`patient_id`, `time`),
-  CONSTRAINT `patient_id2`
-    FOREIGN KEY (`patient_id`)
-    REFERENCES `profile` (`patient_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `treatment`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `treatment` ;
@@ -221,21 +203,40 @@ CREATE TABLE IF NOT EXISTS `examine` (
   `trend` ENUM('fluctuate', 'steady', 'often hyperglycemia', 'often hypoglycemia') NULL,
   `exercise_dose` ENUM('Seldom(sleep/sedentary/in hospital)', 'Medium', 'High', 'Low') NULL,
   PRIMARY KEY (`examination_id`),
-  INDEX `patient_id_idx` (`patient_id` ASC) VISIBLE,
+  INDEX `patient_id_idx` (`patient_id` ASC),
   CONSTRAINT `patient_id4`
     FOREIGN KEY (`patient_id`)
     REFERENCES `profile` (`patient_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
-
-
 -- -----------------------------------------------------
--- Table `composition`
+-- Table `scenario`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `composition` ;
+DROP TABLE IF EXISTS `scenario`;
+CREATE TABLE IF NOT EXISTS `scenario`(
+  `patient_id` INT NOT NULL,
+  `start_day` DATE,
+  `end_day` DATE,
+  `frequency` VARCHAR(30) COMMENT 'format like 3 times the duration',
+  `category` VARCHAR(30) COMMENT 'swim,jog,run,climb',
+  `intensity` ENUM('Low','Medium','High'),
+  `timing` TIME,
+  PRIMARY KEY (`patient_id`),
+  INDEX `scenario_patient_idx` (`patient_id` ASC),
+  CONSTRAINT `scenario_patient_id`
+    FOREIGN KEY(`patient_id`)
+    REFERENCES `profile` (`patient_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+  
+-- -----------------------------------------------------
+-- Table `complication`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `complication` ;
 
-CREATE TABLE IF NOT EXISTS `composition` (
+CREATE TABLE IF NOT EXISTS `complication` (
   `patient_id` INT NOT NULL,
   `symptom` ENUM('diabetic foot', 'diabetic eye', 'diabetic kidney', 'diabetic cardiovascular disease', ' diabetic neuropathy', 'diabetic skin disease', 'hypertension', 'hyperlipidemia', 'others') NOT NULL,
   PRIMARY KEY (`patient_id`, `symptom`),
@@ -263,6 +264,32 @@ CREATE TABLE IF NOT EXISTS `heart_rate` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
+-- Create a view to calculate daily highest and lowest blood glucose levels
+CREATE VIEW `daily_glycemia_summary` AS
+SELECT
+  `patient_id`,
+  DATE(`record_time`) AS `record_date`,
+  MAX(`glycemia`) AS `max_glycemia`,
+  MIN(`glycemia`) AS `min_glycemia`
+FROM
+  `glycemia`
+GROUP BY
+  `patient_id`,
+  `record_date`;
+-- Create a view to calculate weekly highest and lowest blood glucose levels
+CREATE VIEW `weekly_glycemia_summary` AS
+SELECT
+  `patient_id`,
+  YEARWEEK(`record_time`, 0) AS `week_number`,
+  DAYOFWEEK(`record_time`) AS `day_of_week`,
+  MAX(`glycemia`) AS `max_glycemia`,
+  MIN(`glycemia`) AS `min_glycemia`
+FROM
+  `glycemia`
+GROUP BY
+  `patient_id`,
+  `week_number`,
+  `day_of_week`;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
