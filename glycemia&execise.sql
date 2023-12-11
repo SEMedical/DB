@@ -32,25 +32,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `password` VARCHAR(64) NULL COMMENT '\'Encrypted by SHA256\'',
   `role` VARCHAR(10) NULL,
   PRIMARY KEY (`user_id`),
-  UNIQUE INDEX `contact_UNIQUE` (`contact` ASC) VISIBLE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `doctor`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `doctor` ;
-
-CREATE TABLE IF NOT EXISTS `doctor` (
-  `doctor_id` INT NOT NULL,
-  `department` VARCHAR(45) NULL,
-  `title` VARCHAR(45) NULL,
-  PRIMARY KEY (`doctor_id`),
-  CONSTRAINT `doctor_id`
-    FOREIGN KEY (`doctor_id`)
-    REFERENCES `user` (`user_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+  UNIQUE INDEX `contact_UNIQUE` (`contact` ASC))
 ENGINE = InnoDB;
 
 
@@ -133,51 +115,13 @@ CREATE TABLE IF NOT EXISTS `treatment` (
   `prescription` TEXT(200) NULL,
   `effect` VARCHAR(45) NULL,
   PRIMARY KEY (`doctor_id`, `patient_id`, `treat_time`),
-  INDEX `patient_id_idx` (`patient_id` ASC) VISIBLE,
+  INDEX `patient_id_idx` (`patient_id` ASC),
   CONSTRAINT `patient_id3`
     FOREIGN KEY (`patient_id`)
     REFERENCES `profile` (`patient_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `doctor_id2`
-    FOREIGN KEY (`doctor_id`)
-    REFERENCES `doctor` (`doctor_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
--- -----------------------------------------------------
--- Table `subscription`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `subscription`;
-CREATE TABLE IF NOT EXISTS `subscription` (
-  `follower_id` INT NOT NULL,
-  `doctor_id` INT NOT NULL,
-  PRIMARY KEY (`follower_id`, `doctor_id`),
-  CONSTRAINT `fk_subscription_user`
-    FOREIGN KEY (`follower_id`)
-    REFERENCES `user` (`user_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_subscription_doctor`
-    FOREIGN KEY (`doctor_id`)
-    REFERENCES `user` (`user_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-) ENGINE = InnoDB;
-
--- -----------------------------------------------------
--- Table `working_hours`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `working_hours` ;
-
-CREATE TABLE IF NOT EXISTS `working_hours` (
-  `doctor_id` INT NOT NULL,
-  `duration_mark` INT NOT NULL,
-  `start_time` TIME NULL,
-  `start_day` VARCHAR(15) NULL COMMENT '\'From Monday to Friday\'',
-  `end_time` TIME NULL COMMENT 'unit:hour',
-  PRIMARY KEY (`doctor_id`, `duration_mark`),
-  CONSTRAINT `doctor_id3`
     FOREIGN KEY (`doctor_id`)
     REFERENCES `doctor` (`doctor_id`)
     ON DELETE NO ACTION
