@@ -136,10 +136,11 @@ CREATE TABLE IF NOT EXISTS `scenario`(
   `patient_id` INT NOT NULL,
   `start_day` DATE,
   `end_day` DATE,
-  `frequency` VARCHAR(30) COMMENT 'format like 3 times the duration',
+  `frequency` INT COMMENT 'the interval of exercise in the phase',
   `category` VARCHAR(30) COMMENT 'swim,jog,run,climb',
   `intensity` ENUM('Low','Medium','High'),
   `timing` TIME,
+  `duration` INT COMMENT 'unit:minute',
   PRIMARY KEY (`patient_id`),
   INDEX `scenario_patient_idx` (`patient_id` ASC),
   CONSTRAINT `scenario_patient_id`
