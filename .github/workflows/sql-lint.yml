@@ -1,0 +1,31 @@
+name: SQLLint
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '14'
+    
+    - name: Install SQLLint
+      run: npm install -g sql-cli
+    
+    - name: Show installed packages
+      run: npm list -g
+    - name: Check All files
+      run: |
+        find . -type f -name "*" -print
+    - name: Sql-Lint
+      uses: Bidaya0/sql-lint-in-action@v0.0.2
+            
