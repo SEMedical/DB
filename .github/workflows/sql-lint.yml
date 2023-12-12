@@ -23,7 +23,9 @@ jobs:
     
     - name: Show installed packages
       run: npm list -g
-    
+    - name: Check All files
+      run: |
+        find . -type f -name "*" -print0 | xargs -0 -I {} sh -c 'sql-lint {} || true'
     - name: Check SQL files
       run: |
         find . -type f -name "*.sql" -print0 | xargs -0 -I {} sh -c 'sql-lint {} || true'
