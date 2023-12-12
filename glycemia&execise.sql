@@ -209,6 +209,52 @@ GROUP BY
   `week_number`,
   `day_of_week`;
 
+DELIMITER //
+
+CREATE EVENT IF NOT EXISTS daily_cleanup
+ON SCHEDULE
+    EVERY 1 DAY
+    STARTS TIMESTAMP(CURDATE(), '04:00:00')
+DO
+BEGIN
+    -- 删除除最大值、最小值和最接近平均值的记录
+    DELETE FROM glycemia
+    WHERE (record_time, patient_id) NOT IN (
+        SELECT record_time, patient_id
+        FROM (
+            SELECT
+                record_time,
+                patient_id,
+                ROW_NUMBER() OVER (PARTITION BY patient_id ORDER BY glycemia ASC) as min_rank,
+                ROW_NUMBER() OVER (PARTITION BY patient_id ORDER BY glycemia DESC) as max_rank,
+                ROW_NUMBER() OVER (PARTITION BY patient_id ORDER BY ABS(glycemia - AVG(glycemia) OVER (PARTITION BY patient_id)) ASC) as avg_rank
+            FROM glycemia
+            WHERE DATE(record_time) = CURDATE() - INTERVAL 7 DAY
+        ) ranked
+        WHERE min_rank = 1 OR max_rank = 1 OR avg_rank = 1
+    );
+END //
+
+DELIMITER ;
+
+CREATE OR REPLACE VIEW schedule AS
+WITH RECURSIVE numbers AS (
+    SELECT 1 AS n
+    UNION
+    SELECT n + 1 FROM numbers WHERE n < 100 -- Adjust the limit based on your needs
+)
+SELECT
+    s.patient_id,
+    s.start_day + INTERVAL (n-1) * s.frequency DAY AS exercise_date,
+    s.category,
+    s.intensity,
+    s.timing
+FROM
+    scenario s
+JOIN
+    numbers n
+ON
+    s.start_day + INTERVAL (n-1) * s.frequency DAY BETWEEN s.start_day AND s.end_day;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
