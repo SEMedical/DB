@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `role` VARCHAR(10) NULL CHECK (role IN ('patient', 'admin')),
   PRIMARY KEY (`user_id`),
   UNIQUE INDEX `contact_UNIQUE` (`contact` ASC),
-  CHECK (REGEXP_LIKE(contact, '^1[3456789]\d{9}$'))) 
+  CHECK (REGEXP_LIKE(contact, '^1[3456789]\d{9}$')))
 ENGINE = InnoDB;
 
 
@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS `examine` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `blood_pressure_check`
-    CHECK (`low_blood_pressure` < `high_blood_pressure`)) 
+    CHECK (`low_blood_pressure` < `high_blood_pressure`))
 ENGINE = InnoDB;
 
 -- -----------------------------------------------------
@@ -156,10 +156,10 @@ CREATE TABLE IF NOT EXISTS `scenario`(
   CONSTRAINT `date_check`
     CHECK (`start_day` < `end_day`),
   CONSTRAINT `interval_check`
-    CHECK (DATEDIFF(`end_day`, `start_day`) >= `frequency`)) 
+    CHECK (DATEDIFF(`end_day`, `start_day`) >= `frequency`))
 ENGINE = InnoDB;
 
-  
+
 -- -----------------------------------------------------
 -- Table `complication`
 -- -----------------------------------------------------
