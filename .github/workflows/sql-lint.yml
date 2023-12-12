@@ -26,9 +26,6 @@ jobs:
     - name: Check All files
       run: |
         find . -type f -name "*" -print
-    - name: Check SQL files
-      run: |
-        find . -type f -name "*.sql" -print0 | xargs -0 -I {} sh -c 'sql-lint {} || true'
-    - name: Check SQL files in parent directory
-      run: |
-        find .. -type f -name "*.sql" -print0 | xargs -0 -I {} sh -c 'sql-lint {} || true'
+    - name: Sql-Lint
+      uses: Bidaya0/sql-lint-in-action@v0.0.2
+            
