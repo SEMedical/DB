@@ -104,32 +104,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `treatment`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `treatment` ;
-
-CREATE TABLE IF NOT EXISTS `treatment` (
-  `doctor_id` INT NOT NULL,
-  `patient_id` INT NOT NULL,
-  `treat_time` TIMESTAMP(6) NOT NULL,
-  `prescription` TEXT(200) NULL,
-  `effect` VARCHAR(45) NULL,
-  PRIMARY KEY (`doctor_id`, `patient_id`, `treat_time`),
-  INDEX `patient_id_idx` (`patient_id` ASC),
-  CONSTRAINT `patient_id3`
-    FOREIGN KEY (`patient_id`)
-    REFERENCES `profile` (`patient_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `doctor_id2`
-    FOREIGN KEY (`doctor_id`)
-    REFERENCES `doctor` (`doctor_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `examine`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `examine` ;
