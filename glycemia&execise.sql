@@ -25,15 +25,17 @@ DROP TABLE IF EXISTS `user` ;
 
 CREATE TABLE IF NOT EXISTS `user` (
   `user_id` INT NOT NULL AUTO_INCREMENT,
-  `height` INT NULL,
+  `height` INT NULL CHECK (height BETWEEN 120 AND 220),
   `address` VARCHAR(100) NULL,
   `name` VARCHAR(45) NULL,
   `contact` VARCHAR(11) NULL,
   `password` VARCHAR(64) NULL COMMENT '\'Encrypted by SHA256\'',
-  `role` VARCHAR(10) NULL,
+  `role` VARCHAR(10) NULL CHECK (role IN ('patient', 'admin')),
   PRIMARY KEY (`user_id`),
-  UNIQUE INDEX `contact_UNIQUE` (`contact` ASC))
+  UNIQUE INDEX `contact_UNIQUE` (`contact` ASC),
+  CHECK (REGEXP_LIKE(contact, '^1[3456789]\d{9}$'))) 
 ENGINE = InnoDB;
+
 
 
 -- -----------------------------------------------------
@@ -74,7 +76,7 @@ CREATE TABLE IF NOT EXISTS `exercise` (
   `patient_id` INT NULL,
   `start_time` DATETIME(6) NULL,
   `duration` INT NULL COMMENT 'unit:min',
-  `category` VARCHAR(45) NULL COMMENT '\'jogging,yoga,swimming,running\'',
+  `category` VARCHAR(45) NULL CHECK (category IN ('jogging', 'yoga', 'swimming', 'running', 'cycling', 'weightlifting', 'tennis')),
   `exercise_id` INT NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`exercise_id`),
   CONSTRAINT `patient_id1`
@@ -92,7 +94,7 @@ DROP TABLE IF EXISTS `glycemia` ;
 
 CREATE TABLE IF NOT EXISTS `glycemia` (
   `patient_id` INT NOT NULL,
-  `glycemia` INT NULL,
+  `glycemia` DECIMAL(3,1) NULL COMMENT 'unit:mmol/L',
   `record_time` DATETIME(6) NOT NULL,
   PRIMARY KEY (`record_time`, `patient_id`),
   CONSTRAINT `patient_id`
@@ -126,8 +128,11 @@ CREATE TABLE IF NOT EXISTS `examine` (
     FOREIGN KEY (`patient_id`)
     REFERENCES `profile` (`patient_id`)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON UPDATE NO ACTION,
+  CONSTRAINT `blood_pressure_check`
+    CHECK (`low_blood_pressure` < `high_blood_pressure`)) 
 ENGINE = InnoDB;
+
 -- -----------------------------------------------------
 -- Table `scenario`
 -- -----------------------------------------------------
@@ -147,8 +152,13 @@ CREATE TABLE IF NOT EXISTS `scenario`(
     FOREIGN KEY(`patient_id`)
     REFERENCES `profile` (`patient_id`)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON UPDATE NO ACTION,
+  CONSTRAINT `date_check`
+    CHECK (`start_day` < `end_day`),
+  CONSTRAINT `interval_check`
+    CHECK (DATEDIFF(`end_day`, `start_day`) >= `frequency`)) 
 ENGINE = InnoDB;
+
   
 -- -----------------------------------------------------
 -- Table `complication`
