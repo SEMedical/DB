@@ -3,7 +3,7 @@ name: SQLLint
 on:
   push:
     branches:
-      - main
+      - build
 
 jobs:
   lint:
@@ -28,4 +28,11 @@ jobs:
         find . -type f -name "*" -print
     - name: Sql-Lint
       uses: Bidaya0/sql-lint-in-action@v0.0.2
+    - name: Execute SQL File
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      run: |
+        mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD < ./glycemia.sql
             
