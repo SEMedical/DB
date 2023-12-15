@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - build
+  pull_request:
+    branches:
+      - main
 
 jobs:
   lint:
@@ -37,12 +40,24 @@ jobs:
         host: $DB_HOST
         password: $DB_PASSWORD
         user: $DB_USER
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      - name: 🗑 Delete deployment
+        uses: strumwolf/delete-deployment-environment@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: SERVER
+          onlyRemoveDeployments: true
   deploy:
     if: ${{ github.ref == 'refs/heads/build' }}
     runs-on: ubuntu-latest
     environment: SERVER
     needs:
       - lint
+      - cleanup
     steps:
       - uses: actions/checkout@v3
       - name: Deploy the MySQL database v5.7.44-log
