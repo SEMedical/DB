@@ -221,7 +221,7 @@ GROUP BY
   `day_of_week`;
 
 DELIMITER //
-
+DROP EVENT IF EXISTS daily_cleanup;
 CREATE EVENT IF NOT EXISTS daily_cleanup
 ON SCHEDULE
     EVERY 1 DAY
@@ -232,30 +232,45 @@ BEGIN
     DELETE FROM glycemia
     WHERE (record_time, patient_id) NOT IN (
         SELECT record_time, patient_id
-        FROM glycemia
-        WHERE DATE(record_time) = CURDATE() - INTERVAL 7 DAY
-        ORDER BY glycemia ASC
-        LIMIT 1
-
-        UNION
-
-        SELECT record_time, patient_id
-        FROM glycemia
-        WHERE DATE(record_time) = CURDATE() - INTERVAL 7 DAY
-        ORDER BY glycemia DESC
-        LIMIT 1
-
-        UNION
-
-        SELECT record_time, patient_id
-        FROM glycemia
-        WHERE DATE(record_time) = CURDATE() - INTERVAL 7 DAY
-        ORDER BY ABS(glycemia - (SELECT AVG(glycemia) FROM glycemia WHERE DATE(record_time) = CURDATE() - INTERVAL 7 DAY)) ASC
-        LIMIT 1
+        FROM (
+            SELECT
+                record_time,
+                patient_id,
+                (
+                    SELECT glycemia
+                    FROM glycemia AS g_min
+                    WHERE g_min.patient_id = glycemia.patient_id
+                    ORDER BY glycemia ASC
+                    LIMIT 1
+                ) AS min_glycemia,
+                (
+                    SELECT glycemia
+                    FROM glycemia AS g_max
+                    WHERE g_max.patient_id = glycemia.patient_id
+                    ORDER BY glycemia DESC
+                    LIMIT 1
+                ) AS max_glycemia,
+                (
+                    SELECT glycemia
+                    FROM glycemia AS g_avg
+                    WHERE g_avg.patient_id = glycemia.patient_id
+                    ORDER BY ABS(g_avg.glycemia - (
+                        SELECT AVG(g_inner.glycemia)
+                        FROM glycemia AS g_inner
+                        WHERE g_inner.patient_id = glycemia.patient_id
+                        AND DATE(g_inner.record_time) = CURDATE() - INTERVAL 7 DAY
+                    )) ASC
+                    LIMIT 1
+                ) AS avg_glycemia
+            FROM glycemia
+            WHERE DATE(record_time) = CURDATE() - INTERVAL 7 DAY
+        ) ranked
+        WHERE glycemia.glycemia IN (ranked.min_glycemia, ranked.max_glycemia, ranked.avg_glycemia)
     );
 END //
 
 DELIMITER ;
+
 
 
 CREATE OR REPLACE VIEW schedule AS
