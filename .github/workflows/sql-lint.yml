@@ -28,6 +28,11 @@ jobs:
         find . -type f -name "*" -print
     - name: Sql-Lint
       uses: Bidaya0/sql-lint-in-action@v0.0.2
+  deploy:
+    runs-on: ubuntu-latest 
+    needs:
+      - lint
+    steps:
     - name: Execute SQL File
       env:
         DB_HOST: ${{ secrets.DB_HOST }}
