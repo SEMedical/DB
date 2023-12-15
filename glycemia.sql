@@ -271,27 +271,6 @@ END //
 
 DELIMITER ;
 
-
-
---CREATE OR REPLACE VIEW schedule AS
---WITH RECURSIVE numbers AS (
---    SELECT 1 AS n
---    UNION
---    SELECT n + 1 FROM numbers WHERE n < 100 -- Adjust the limit based on your needs
---)
---SELECT
---    s.patient_id,
---    s.start_day + INTERVAL (n-1) * s.frequency DAY AS exercise_date,
---    s.category,
---    s.intensity,
---    s.timing
---FROM
---    scenario s
---JOIN
---    numbers n
---ON
---    s.start_day + INTERVAL (n-1) * s.frequency DAY BETWEEN s.start_day AND s.end_day;
-
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
