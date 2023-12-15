@@ -23,7 +23,7 @@ jobs:
     
     - name: Show installed packages
       run: npm list -g
-    - name: Check All files
+    - name: Check SQL files
       run: |
         find . -type f -name "*.sql" -print
     - name: Sql-Lint
@@ -33,6 +33,10 @@ jobs:
         DB_USER: ${{ secrets.DB_USER }}
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         DB_SCHEMA: ${{ secrets.DB_SCHEMA }}
+      with:
+        host: $DB_HOST
+        password: $DB_PASSWORD
+        user: $DB_USER
     - name: Execute SQL File
       env:
         DB_HOST: ${{ secrets.DB_HOST }}
