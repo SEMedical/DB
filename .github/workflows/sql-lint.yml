@@ -3,7 +3,7 @@ name: SQLLint
 on:
   push:
     branches:
-      - build
+      - main
   pull_request:
     branches:
       - main
@@ -52,7 +52,7 @@ jobs:
           environment: SERVER
           onlyRemoveDeployments: true
   deploy:
-    if: ${{ github.ref == 'refs/heads/build' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     environment: SERVER
     needs:
@@ -67,5 +67,5 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_SCHEMA: ${{ secrets.DB_SCHEMA }}
         run: |
-          mysql -h $DB_HOST -u $DB_USER --password="$DB_PASSWORD" -D $DB_SCHEMA < glycemia.sql
+          mysql -h $DB_HOST -u $DB_USER --password="$DB_PASSWORD" -D $DB_SCHEMA < glycemia-delta.sql
             
