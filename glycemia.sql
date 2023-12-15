@@ -221,7 +221,7 @@ GROUP BY
   `day_of_week`;
 
 DELIMITER //
-DROP EVENT IF EXISTS daily_cleanup;
+
 CREATE EVENT IF NOT EXISTS daily_cleanup
 ON SCHEDULE
     EVERY 1 DAY
@@ -232,21 +232,31 @@ BEGIN
     DELETE FROM glycemia
     WHERE (record_time, patient_id) NOT IN (
         SELECT record_time, patient_id
-        FROM (
-            SELECT
-                record_time,
-                patient_id,
-                ROW_NUMBER() OVER (PARTITION BY patient_id ORDER BY glycemia ASC) as min_rank,
-                ROW_NUMBER() OVER (PARTITION BY patient_id ORDER BY glycemia DESC) as max_rank,
-                ROW_NUMBER() OVER (PARTITION BY patient_id ORDER BY ABS(glycemia - AVG(glycemia) OVER (PARTITION BY patient_id)) ASC) as avg_rank
-            FROM glycemia
-            WHERE DATE(record_time) = CURDATE() - INTERVAL 7 DAY
-        ) ranked
-        WHERE min_rank = 1 OR max_rank = 1 OR avg_rank = 1
+        FROM glycemia
+        WHERE DATE(record_time) = CURDATE() - INTERVAL 7 DAY
+        ORDER BY glycemia ASC
+        LIMIT 1
+
+        UNION
+
+        SELECT record_time, patient_id
+        FROM glycemia
+        WHERE DATE(record_time) = CURDATE() - INTERVAL 7 DAY
+        ORDER BY glycemia DESC
+        LIMIT 1
+
+        UNION
+
+        SELECT record_time, patient_id
+        FROM glycemia
+        WHERE DATE(record_time) = CURDATE() - INTERVAL 7 DAY
+        ORDER BY ABS(glycemia - (SELECT AVG(glycemia) FROM glycemia WHERE DATE(record_time) = CURDATE() - INTERVAL 7 DAY)) ASC
+        LIMIT 1
     );
 END //
 
 DELIMITER ;
+
 
 CREATE OR REPLACE VIEW schedule AS
 WITH RECURSIVE numbers AS (
