@@ -23,9 +23,26 @@ jobs:
     
     - name: Show installed packages
       run: npm list -g
-    - name: Check All files
+    - name: Check SQL files
       run: |
-        find . -type f -name "*" -print
+        find . -type f -name "*.sql" -print
     - name: Sql-Lint
       uses: Bidaya0/sql-lint-in-action@v0.0.2
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_SCHEMA: ${{ secrets.DB_SCHEMA }}
+      with:
+        host: $DB_HOST
+        password: $DB_PASSWORD
+        user: $DB_USER
+    - name: Execute SQL File
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_SCHEMA: ${{ secrets.DB_SCHEMA }}
+      run: |
+        mysql -h $DB_HOST -u $DB_USER --password="$DB_PASSWORD" -D $DB_SCHEMA < glycemia.sql
             
