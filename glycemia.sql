@@ -221,7 +221,7 @@ GROUP BY
   `day_of_week`;
 
 DELIMITER //
-
+DROP EVENT IF EXISTS daily_cleanup;
 CREATE EVENT IF NOT EXISTS daily_cleanup
 ON SCHEDULE
     EVERY 1 DAY
