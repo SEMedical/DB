@@ -3,7 +3,7 @@ name: SQLLint
 on:
   push:
     branches:
-      - main
+      - build
 
 jobs:
   lint:
@@ -37,12 +37,20 @@ jobs:
         host: $DB_HOST
         password: $DB_PASSWORD
         user: $DB_USER
-    - name: Execute SQL File
-      env:
-        DB_HOST: ${{ secrets.DB_HOST }}
-        DB_USER: ${{ secrets.DB_USER }}
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        DB_SCHEMA: ${{ secrets.DB_SCHEMA }}
-      run: |
-        mysql -h $DB_HOST -u $DB_USER --password="$DB_PASSWORD" -D $DB_SCHEMA < glycemia.sql
+  deploy:
+    if: ${{ github.ref == 'refs/heads/build' }}
+    runs-on: ubuntu-latest
+    environment: SERVER
+    needs:
+      - lint
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy the MySQL database v5.7.44-log
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_SCHEMA: ${{ secrets.DB_SCHEMA }}
+        run: |
+          mysql -h $DB_HOST -u $DB_USER --password="$DB_PASSWORD" -D $DB_SCHEMA < glycemia.sql
             
