@@ -42,6 +42,8 @@ jobs:
     needs:
       - lint
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: Execute SQL File
       env:
         DB_HOST: ${{ secrets.DB_HOST }}
