@@ -16,7 +16,7 @@ DROP SCHEMA IF EXISTS `wegs` ;
 -- Schema glucose_monitoring
 -- -----------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS `wegs` DEFAULT CHARACTER SET utf8 COLLATE utf8_bin ;
-USE `glycemia` ;
+USE `wegs` ;
 
 -- -----------------------------------------------------
 -- Table `user`
