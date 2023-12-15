@@ -34,5 +34,5 @@ jobs:
         DB_USER: ${{ secrets.DB_USER }}
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       run: |
-        mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD -D $DB_SCHEMA < ./glycemia.sql
+        mysql -h $DB_HOST -u $DB_USER --password="$DB_PASSWORD" -D $DB_SCHEMA < ./glycemia.sql
             
