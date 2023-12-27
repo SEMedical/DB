@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS `exercise` (
   `patient_id` INT NULL,
   `start_time` DATETIME(6) NULL,
   `duration` INT NULL COMMENT 'unit:min',
+  `calories` INT,
   `category` VARCHAR(45) NULL CHECK (category IN ('jogging', 'yoga', 'swimming', 'running', 'cycling', 'weightlifting', 'tennis')),
   `exercise_id` INT NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`exercise_id`),
@@ -86,7 +87,19 @@ CREATE TABLE IF NOT EXISTS `exercise` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+DROP TABLE IF EXISTS `running` ;
 
+CREATE TABLE IF NOT EXISTS `running` (
+  `exercise_id` INT NOT NULL AUTO_INCREMENT,
+  `pace` INT COMMENT 'uint:second',
+  `distance` DECIMAL(5,2),
+  PRIMARY KEY (`exercise_id`),
+  CONSTRAINT `patient_id1`
+    FOREIGN KEY (`exercise_id`)
+    REFERENCES `exercise` (`exercise_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `glycemia`
 -- -----------------------------------------------------
@@ -183,13 +196,13 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `heart_rate` ;
 
 CREATE TABLE IF NOT EXISTS `heart_rate` (
-  `exercise_id` INT NOT NULL,
-  `interval_seq` INT NOT NULL COMMENT 'per 3 minutes',
-  `avg_interval_heart_rate` INT NULL,
-  PRIMARY KEY (`exercise_id`, `interval_seq`),
-  CONSTRAINT `exercise_id`
-    FOREIGN KEY (`exercise_id`)
-    REFERENCES `exercise` (`exercise_id`)
+  `patient_id` INT NOT NULL,
+  `record_time` INT NOT NULL COMMENT 'per 3 minutes',
+  `heart_rate` INT NULL,
+  PRIMARY KEY (`patient_id`, `record_time`),
+  CONSTRAINT `patient_id_heart_rate`
+    FOREIGN KEY (`patient_id`)
+    REFERENCES `profile` (`patient_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
