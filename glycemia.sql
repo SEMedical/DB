@@ -152,12 +152,8 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `scenario`;
 CREATE TABLE IF NOT EXISTS `scenario`(
   `patient_id` INT NOT NULL,
-  `start_day` DATE,
-  `end_day` DATE,
-  `frequency` INT COMMENT 'the interval of exercise in the phase',
   `category` VARCHAR(30) COMMENT 'swim,jog,run,climb',
-  `intensity` ENUM('Low','Medium','High'),
-  `timing` TIME,
+  `calories` INT COMMENT 'unit:?',
   `duration` INT COMMENT 'unit:minute',
   PRIMARY KEY (`patient_id`),
   INDEX `scenario_patient_idx` (`patient_id` ASC),
