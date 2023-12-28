@@ -208,7 +208,19 @@ SELECT
   `patient_id`,
   DATE(`record_time`) AS `record_date`,
   MAX(`glycemia`) AS `max_glycemia`,
-  MIN(`glycemia`) AS `min_glycemia`
+  MIN(`glycemia`) AS `min_glycemia`,
+  AVG(`glycemia`) AS `avg_glycemia`,
+  (SUM(CASE WHEN (
+  HOUR(`record_time`) BETWEEN 7 AND 9 OR 
+  HOUR(`record_time`) BETWEEN 12 AND 14 OR 
+  HOUR(`record_time`) BETWEEN 17 AND 19) 
+  AND `glycemia` > 140 THEN 1 WHEN NOT (
+  HOUR(`record_time`) BETWEEN 7 AND 9 OR 
+  HOUR(`record_time`) BETWEEN 12 AND 14 OR 
+  HOUR(`record_time`) BETWEEN 17 AND 19) 
+  AND `glycemia` > 100 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `hyper_percent`,
+  (SUM(CASE WHEN `glycemia` < 70 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `hypo_percent`,
+  1- `hyper_percent` - `hypo_percent` as `eu_percent`
 FROM
   `glycemia`
 GROUP BY
@@ -221,13 +233,26 @@ SELECT
   YEARWEEK(`record_time`, 0) AS `week_number`,
   DAYOFWEEK(`record_time`) AS `day_of_week`,
   MAX(`glycemia`) AS `max_glycemia`,
-  MIN(`glycemia`) AS `min_glycemia`
+  MIN(`glycemia`) AS `min_glycemia`,
+  AVG(`glycemia`) AS `avg_glycemia`,
+  (SUM(CASE WHEN (
+  HOUR(`record_time`) BETWEEN 7 AND 9 OR 
+  HOUR(`record_time`) BETWEEN 12 AND 14 OR 
+  HOUR(`record_time`) BETWEEN 17 AND 19) 
+  AND `glycemia` > 140 THEN 1 WHEN NOT (
+  HOUR(`record_time`) BETWEEN 7 AND 9 OR 
+  HOUR(`record_time`) BETWEEN 12 AND 14 OR 
+  HOUR(`record_time`) BETWEEN 17 AND 19) 
+  AND `glycemia` > 100 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `hyper_percent`,
+  (SUM(CASE WHEN `glycemia` < 70 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `hypo_percent`,
+  1- `hyper_percent` - `hypo_percent` as `eu_percent`
 FROM
   `glycemia`
 GROUP BY
   `patient_id`,
   `week_number`,
   `day_of_week`;
+
 
 DELIMITER //
 DROP EVENT IF EXISTS daily_cleanup;
