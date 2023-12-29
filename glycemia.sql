@@ -145,7 +145,24 @@ CREATE TABLE IF NOT EXISTS `examine` (
   CONSTRAINT `blood_pressure_check`
     CHECK (`low_blood_pressure` < `high_blood_pressure`))
 ENGINE = InnoDB;
-
+-- -----------------------------------------------------
+-- Table `questionaire`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `questionaire`;
+CREATE TABLE IF NOT EXISTS `questionaire`(
+  `patient_id` INT NOT NULL,
+  `questionaire_id` INT NOT NULL AUTO_INCREMENT,
+  `version` VARCHAR(10) COMMENT '*.*.*(Major,minor,patch)',
+  `template` INT COMMENT '2 templates now',
+  `data` VARCHAR(30) COMMENT 'bitmap like',
+  PRIMARY KEY (`questionaire_id`),
+  INDEX `questionaire_id_idx` (`questionaire_id` ASC),
+  CONSTRAINT `questionaire_patient_id`
+    FOREIGN KEY(`patient_id`)
+    REFERENCES `profile` (`patient_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `scenario`
 -- -----------------------------------------------------
