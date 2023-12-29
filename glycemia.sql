@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS `exercise` (
   `patient_id` INT NULL,
   `start_time` DATETIME(6) NULL,
   `duration` INT NULL COMMENT 'unit:min',
+  `calories` INT,
   `category` VARCHAR(45) NULL CHECK (category IN ('jogging', 'yoga', 'swimming', 'running', 'cycling', 'weightlifting', 'tennis')),
   `exercise_id` INT NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`exercise_id`),
@@ -86,7 +87,19 @@ CREATE TABLE IF NOT EXISTS `exercise` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+DROP TABLE IF EXISTS `running` ;
 
+CREATE TABLE IF NOT EXISTS `running` (
+  `exercise_id` INT NOT NULL AUTO_INCREMENT,
+  `pace` INT COMMENT 'uint:second',
+  `distance` DECIMAL(5,2),
+  PRIMARY KEY (`exercise_id`),
+  CONSTRAINT `fk_patient_id1`
+    FOREIGN KEY (`exercise_id`)
+    REFERENCES `exercise` (`exercise_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `glycemia`
 -- -----------------------------------------------------
@@ -132,19 +145,32 @@ CREATE TABLE IF NOT EXISTS `examine` (
   CONSTRAINT `blood_pressure_check`
     CHECK (`low_blood_pressure` < `high_blood_pressure`))
 ENGINE = InnoDB;
-
+-- -----------------------------------------------------
+-- Table `questionaire`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `questionaire`;
+CREATE TABLE IF NOT EXISTS `questionaire`(
+  `patient_id` INT NOT NULL,
+  `questionaire_id` INT NOT NULL AUTO_INCREMENT,
+  `version` VARCHAR(10) COMMENT '*.*.*(Major,minor,patch)',
+  `template` INT COMMENT '2 templates now',
+  `data` VARCHAR(30) COMMENT 'bitmap like',
+  PRIMARY KEY (`questionaire_id`),
+  INDEX `questionaire_id_idx` (`questionaire_id` ASC),
+  CONSTRAINT `questionaire_patient_id`
+    FOREIGN KEY(`patient_id`)
+    REFERENCES `profile` (`patient_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `scenario`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `scenario`;
 CREATE TABLE IF NOT EXISTS `scenario`(
   `patient_id` INT NOT NULL,
-  `start_day` DATE,
-  `end_day` DATE,
-  `frequency` INT COMMENT 'the interval of exercise in the phase',
   `category` VARCHAR(30) COMMENT 'swim,jog,run,climb',
-  `intensity` ENUM('Low','Medium','High'),
-  `timing` TIME,
+  `calories` INT COMMENT 'unit:?',
   `duration` INT COMMENT 'unit:minute',
   PRIMARY KEY (`patient_id`),
   INDEX `scenario_patient_idx` (`patient_id` ASC),
@@ -183,13 +209,13 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `heart_rate` ;
 
 CREATE TABLE IF NOT EXISTS `heart_rate` (
-  `exercise_id` INT NOT NULL,
-  `interval_seq` INT NOT NULL COMMENT 'per 3 minutes',
-  `avg_interval_heart_rate` INT NULL,
-  PRIMARY KEY (`exercise_id`, `interval_seq`),
-  CONSTRAINT `exercise_id`
-    FOREIGN KEY (`exercise_id`)
-    REFERENCES `exercise` (`exercise_id`)
+  `patient_id` INT NOT NULL,
+  `record_time` INT NOT NULL COMMENT 'per 3 minutes',
+  `heart_rate` INT NULL,
+  PRIMARY KEY (`patient_id`, `record_time`),
+  CONSTRAINT `patient_id_heart_rate`
+    FOREIGN KEY (`patient_id`)
+    REFERENCES `profile` (`patient_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -199,7 +225,27 @@ SELECT
   `patient_id`,
   DATE(`record_time`) AS `record_date`,
   MAX(`glycemia`) AS `max_glycemia`,
-  MIN(`glycemia`) AS `min_glycemia`
+  MIN(`glycemia`) AS `min_glycemia`,
+  AVG(`glycemia`) AS `avg_glycemia`,
+  (SUM(CASE WHEN (
+  HOUR(`record_time`) BETWEEN 7 AND 9 OR
+  HOUR(`record_time`) BETWEEN 12 AND 14 OR
+  HOUR(`record_time`) BETWEEN 17 AND 19)
+  AND `glycemia` > 140 THEN 1 WHEN NOT (
+  HOUR(`record_time`) BETWEEN 7 AND 9 OR
+  HOUR(`record_time`) BETWEEN 12 AND 14 OR
+  HOUR(`record_time`) BETWEEN 17 AND 19)
+  AND `glycemia` > 100 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `hyper_percent`,
+  (SUM(CASE WHEN `glycemia` < 70 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `hypo_percent`,
+  1 - (SUM(CASE WHEN (
+  HOUR(`record_time`) BETWEEN 7 AND 9 OR
+  HOUR(`record_time`) BETWEEN 12 AND 14 OR
+  HOUR(`record_time`) BETWEEN 17 AND 19)
+  AND `glycemia` > 140 THEN 1 WHEN NOT (
+  HOUR(`record_time`) BETWEEN 7 AND 9 OR
+  HOUR(`record_time`) BETWEEN 12 AND 14 OR
+  HOUR(`record_time`) BETWEEN 17 AND 19)
+  AND `glycemia` > 100 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `eu_percent`
 FROM
   `glycemia`
 GROUP BY
@@ -212,7 +258,27 @@ SELECT
   YEARWEEK(`record_time`, 0) AS `week_number`,
   DAYOFWEEK(`record_time`) AS `day_of_week`,
   MAX(`glycemia`) AS `max_glycemia`,
-  MIN(`glycemia`) AS `min_glycemia`
+  MIN(`glycemia`) AS `min_glycemia`,
+  AVG(`glycemia`) AS `avg_glycemia`,
+  (SUM(CASE WHEN (
+  HOUR(`record_time`) BETWEEN 7 AND 9 OR
+  HOUR(`record_time`) BETWEEN 12 AND 14 OR
+  HOUR(`record_time`) BETWEEN 17 AND 19)
+  AND `glycemia` > 140 THEN 1 WHEN NOT (
+  HOUR(`record_time`) BETWEEN 7 AND 9 OR
+  HOUR(`record_time`) BETWEEN 12 AND 14 OR
+  HOUR(`record_time`) BETWEEN 17 AND 19)
+  AND `glycemia` > 100 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `hyper_percent`,
+  (SUM(CASE WHEN `glycemia` < 70 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `hypo_percent`,
+  1 - (SUM(CASE WHEN (
+  HOUR(`record_time`) BETWEEN 7 AND 9 OR
+  HOUR(`record_time`) BETWEEN 12 AND 14 OR
+  HOUR(`record_time`) BETWEEN 17 AND 19)
+  AND `glycemia` > 140 THEN 1 WHEN NOT (
+  HOUR(`record_time`) BETWEEN 7 AND 9 OR
+  HOUR(`record_time`) BETWEEN 12 AND 14 OR
+  HOUR(`record_time`) BETWEEN 17 AND 19)
+  AND `glycemia` > 100 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `eu_percent`
 FROM
   `glycemia`
 GROUP BY
