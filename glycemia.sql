@@ -74,7 +74,7 @@ DROP TABLE IF EXISTS `exercise` ;
 
 CREATE TABLE IF NOT EXISTS `exercise` (
   `patient_id` INT NULL,
-  `start_time` DATETIME(6) NULL,
+  `start_time` DATETIME NULL,
   `duration` INT NULL COMMENT 'unit:min',
   `calories` INT,
   `category` VARCHAR(45) NULL CHECK (category IN ('jogging', 'yoga', 'swimming', 'running', 'cycling', 'weightlifting', 'tennis')),
@@ -108,7 +108,7 @@ DROP TABLE IF EXISTS `glycemia` ;
 CREATE TABLE IF NOT EXISTS `glycemia` (
   `patient_id` INT NOT NULL,
   `glycemia` DECIMAL(3,1) NULL COMMENT 'unit:mmol/L',
-  `record_time` DATETIME(6) NOT NULL,
+  `record_time` DATETIME NOT NULL,
   PRIMARY KEY (`record_time`, `patient_id`),
   CONSTRAINT `patient_id`
     FOREIGN KEY (`patient_id`)
@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS `examine` (
   `health_state` ENUM('severe', 'unhealthy', 'well', 'healthy') NULL,
   `high_blood_pressure` INT NULL COMMENT 'mmHg',
   `sleep_quality` ENUM('terrible', 'well', 'good') NULL,
-  `examine_time` DATETIME(6) NULL,
+  `examine_time` DATETIME NULL,
   `low_blood_pressure` INT NULL COMMENT 'unit:mmHg',
   `hyperglycemia` ENUM('limosis', 'after meal', 'euglycemia') NULL,
   `trend` ENUM('fluctuate', 'steady', 'often hyperglycemia', 'often hypoglycemia') NULL,
@@ -251,40 +251,6 @@ FROM
 GROUP BY
   `patient_id`,
   `record_date`;
--- Create a view to calculate weekly highest and lowest blood glucose levels
-CREATE VIEW `weekly_glycemia_summary` AS
-SELECT
-  `patient_id`,
-  YEARWEEK(`record_time`, 0) AS `week_number`,
-  DAYOFWEEK(`record_time`) AS `day_of_week`,
-  MAX(`glycemia`) AS `max_glycemia`,
-  MIN(`glycemia`) AS `min_glycemia`,
-  AVG(`glycemia`) AS `avg_glycemia`,
-  (SUM(CASE WHEN (
-  HOUR(`record_time`) BETWEEN 7 AND 9 OR
-  HOUR(`record_time`) BETWEEN 12 AND 14 OR
-  HOUR(`record_time`) BETWEEN 17 AND 19)
-  AND `glycemia` > 140 THEN 1 WHEN NOT (
-  HOUR(`record_time`) BETWEEN 7 AND 9 OR
-  HOUR(`record_time`) BETWEEN 12 AND 14 OR
-  HOUR(`record_time`) BETWEEN 17 AND 19)
-  AND `glycemia` > 100 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `hyper_percent`,
-  (SUM(CASE WHEN `glycemia` < 70 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `hypo_percent`,
-  1 - (SUM(CASE WHEN (
-  HOUR(`record_time`) BETWEEN 7 AND 9 OR
-  HOUR(`record_time`) BETWEEN 12 AND 14 OR
-  HOUR(`record_time`) BETWEEN 17 AND 19)
-  AND `glycemia` > 140 THEN 1 WHEN NOT (
-  HOUR(`record_time`) BETWEEN 7 AND 9 OR
-  HOUR(`record_time`) BETWEEN 12 AND 14 OR
-  HOUR(`record_time`) BETWEEN 17 AND 19)
-  AND `glycemia` > 100 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `eu_percent`
-FROM
-  `glycemia`
-GROUP BY
-  `patient_id`,
-  `week_number`,
-  `day_of_week`;
 
 DELIMITER //
 DROP EVENT IF EXISTS daily_cleanup;
