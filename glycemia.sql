@@ -227,7 +227,7 @@ SELECT
   MAX(`glycemia`) AS `max_glycemia`,
   MIN(`glycemia`) AS `min_glycemia`,
   AVG(`glycemia`) AS `avg_glycemia`,
-  (SUM(CASE WHEN (
+  ROUND((SUM(CASE WHEN (
   HOUR(`record_time`) BETWEEN 7 AND 9 OR
   HOUR(`record_time`) BETWEEN 12 AND 14 OR
   HOUR(`record_time`) BETWEEN 17 AND 19)
@@ -235,9 +235,9 @@ SELECT
   HOUR(`record_time`) BETWEEN 7 AND 9 OR
   HOUR(`record_time`) BETWEEN 12 AND 14 OR
   HOUR(`record_time`) BETWEEN 17 AND 19)
-  AND `glycemia` > 5.550 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `hyper_percent`,
-  (SUM(CASE WHEN `glycemia` <3.884 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `hypo_percent`,
-  1 - (SUM(CASE WHEN (
+  AND `glycemia` > 5.550 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100,3) AS `hyper_percent`,
+  ROUND((SUM(CASE WHEN `glycemia` <3.884 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100,3) AS `hypo_percent`,
+  ROUND(100 - (SUM(CASE WHEN (
   HOUR(`record_time`) BETWEEN 7 AND 9 OR
   HOUR(`record_time`) BETWEEN 12 AND 14 OR
   HOUR(`record_time`) BETWEEN 17 AND 19)
@@ -245,7 +245,9 @@ SELECT
   HOUR(`record_time`) BETWEEN 7 AND 9 OR
   HOUR(`record_time`) BETWEEN 12 AND 14 OR
   HOUR(`record_time`) BETWEEN 17 AND 19)
-  AND `glycemia` > 5.550 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100 AS `eu_percent`
+  AND `glycemia` > 5.550 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100
+  - (SUM(CASE WHEN `glycemia` <3.884 THEN 1 ELSE 0 END) / COUNT(`glycemia`)) * 100,3)
+  AS `eu_percent`
 FROM
   `glycemia`
 GROUP BY
