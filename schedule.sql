@@ -1,3 +1,23 @@
+# 删除时间太长的运动记录
+CREATE TEMPORARY TABLE temp_exercise_to_delete (
+  `exercise_id` INT
+);
+INSERT INTO temp_exercise_to_delete
+SELECT e.`exercise_id`
+FROM `exercise` e
+WHERE e.`duration` > 90
+AND EXISTS (
+  SELECT 1
+  FROM `running` r
+  WHERE r.`exercise_id` = e.`exercise_id`
+);
+DELETE FROM `running`
+WHERE `exercise_id` IN (
+  SELECT `exercise_id`
+  FROM temp_exercise_to_delete
+);
+DELETE FROM `exercise` where duration>90;
+# 删除相互覆盖的运动记录
 -- Create a temporary table to store conflicting exercise_id values
 CREATE TEMPORARY TABLE temp_conflicting_exercises (
   `conflicting_exercise_id` INT
