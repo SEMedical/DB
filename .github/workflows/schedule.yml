@@ -1,0 +1,87 @@
+name: Remove unqualified data on schedule
+
+on:
+  push:
+    branches:
+      - main
+      - schedule
+  pull_request:
+    branches:
+      - main
+      - schedule
+  schedule:
+    - cron: '0 12 * * *'
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '14'
+    
+    - name: Install SQLLint
+      run: npm install -g sql-cli
+    
+    - name: Show installed packages
+      run: npm list -g
+    - name: Check SQL files
+      run: |
+        find . -type f -name "*.sql" -print
+    - name: Sql-Lint
+      uses: Bidaya0/sql-lint-in-action@v0.0.2
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_SCHEMA: ${{ secrets.DB_SCHEMA }}
+      with:
+        host: $DB_HOST
+        password: $DB_PASSWORD
+        user: $DB_USER
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      - name: 🗑 Delete deployment
+        uses: strumwolf/delete-deployment-environment@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: SERVER
+          onlyRemoveDeployments: true
+  schedule:
+    runs-on: ubuntu-latest
+    environment: SERVER
+    steps:
+      - uses: actions/checkout@v3
+      - name: execute the scheduled scripts
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_SCHEMA: ${{ secrets.DB_SCHEMA }}
+        run: |
+          mysql -h $DB_HOST -u $DB_USER --password="$DB_PASSWORD" -D $DB_SCHEMA < schedule.sql
+  deploy:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    environment: SERVER
+    needs:
+      - lint
+      - cleanup
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy the MySQL database v5.7.44-log
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_SCHEMA: ${{ secrets.DB_SCHEMA }}
+        run: |
+          mysql -h $DB_HOST -u $DB_USER --password="$DB_PASSWORD" -D $DB_SCHEMA < glycemia.sql
+            
