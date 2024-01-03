@@ -24,5 +24,3 @@ SELECT * FROM temp_conflicting_exercises;
 -- Delete records from the `exercise` table based on `exercise_id` values in the temporary table
 DELETE FROM `exercise`
 WHERE `exercise_id` IN (SELECT `conflicting_exercise_id` FROM temp_conflicting_exercises);
-GRANT ALTER ON ${{ secrets.DB_SCHEMA }}.* TO '${{ secrets.DB_USER }}'@'${{ secrets.DB_HOST }}';
-GRANT DELETE ON ${{ secrets.DB_SCHEMA }}.* TO '${{ secrets.DB_USER }}'@'${{ secrets.DB_HOST }}';
