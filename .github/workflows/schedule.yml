@@ -9,7 +9,8 @@ on:
     branches:
       - main
       - schedule
-
+  schedule:
+    - cron: '0 12 * * *'
 jobs:
   lint:
     runs-on: ubuntu-latest
